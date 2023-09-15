@@ -1,4 +1,4 @@
-namespace Exts.UI
+namespace Goodies_0.Exts.UI
 {
     using UnityEngine;
     using UnityEngine.UI;
