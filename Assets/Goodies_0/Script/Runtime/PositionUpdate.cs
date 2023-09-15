@@ -6,27 +6,37 @@ namespace Goodies_0.Trs
 
     public class PositionUpdate : MonoBehaviour
     {
-        [SerializeField] UnityEvent<Vector3> OnPositionChanged;
+        [SerializeField]protected UnityEvent<Vector3> OnPositionChanged;
         Vector3 previousPosition;
         [SerializeField] bool notifyOnEnable = false;
-        private void OnEnable()
+        [SerializeField]bool dontNotify=false;
+        protected virtual void OnEnable()
         {
-            UpdateController.AddUpdateListener(OnUpdate);
-            previousPosition=transform.position;
-            if(notifyOnEnable )
-            OnPositionChanged?.Invoke(previousPosition);
-        }
-        private void OnDisable()
-        {
-            UpdateController.RemoveUpdateListener(OnUpdate);            
-        }
-        private void OnUpdate()
-        {
-            Vector3 p= transform.position;
-            if (transform.position != previousPosition)
+            if (!dontNotify)
             {
-                previousPosition = p;
-                OnPositionChanged?.Invoke(p);
+                UpdateController.AddUpdateListener(OnUpdate);
+                previousPosition = transform.position;
+                if (notifyOnEnable)
+                    OnPositionChanged?.Invoke(previousPosition);
+            }
+        }
+        protected virtual void OnDisable()
+        {
+            if (!dontNotify)
+            {
+                UpdateController.RemoveUpdateListener(OnUpdate);
+            }           
+        }
+        protected virtual void OnUpdate()
+        {
+            if (!dontNotify)
+            {
+                Vector3 p = transform.position;
+                if (transform.position != previousPosition)
+                {
+                    previousPosition = p;
+                    OnPositionChanged?.Invoke(p);
+                }
             }
         }
 
@@ -37,6 +47,14 @@ namespace Goodies_0.Trs
         public void RemoveListener(UnityAction<Vector3> listener)
         {
             OnPositionChanged.RemoveListener(listener);
+        }
+        public void StopNotifying()
+        {
+            if (!dontNotify)
+            {
+                dontNotify = true;
+                UpdateController.RemoveUpdateListener(OnUpdate);
+            }
         }
     }
 }
